@@ -11,4 +11,4 @@ async def root(): return {"service": "OmniBrain Core", "status": "online"}
 @app.get("/api/search")
 async def search(q: str): return {"query": q, "latency_ms": 24, "results": []}
 
-# Commit update 19
+# Commit update 36
