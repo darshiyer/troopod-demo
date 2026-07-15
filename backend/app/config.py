@@ -8,4 +8,4 @@ EMBEDDING_MODEL = "nomic-embed-text"
 VECTOR_DIMENSION = 768
 os.makedirs(DB_DIR, exist_ok=True)
 
-# Commit update 69
+# Commit update 86
