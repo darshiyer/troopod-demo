@@ -78,3 +78,4 @@ export const KnowledgeGraphView = () => {
     </div>
   );
 };
+// Node inspector update (20:12:56)
