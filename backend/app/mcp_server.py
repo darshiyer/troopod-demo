@@ -113,3 +113,4 @@ class ModelContextProtocolServer:
             return MCPToolResponse(tool_name=request.name, success=True, data=result)
         except Exception as e:
             return MCPToolResponse(tool_name=request.name, success=False, data=None, error=str(e))
+# MCP JSON-RPC update (21:33:19)
