@@ -26,6 +26,19 @@ export interface GraphData {
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
+// Real-time WebSocket connection helper for memory indexing events
+export function connectMemoryStream(onMemoryUpdate: (event: any) => void) {
+  try {
+    const wsUrl = BACKEND_URL.replace('http', 'ws') + '/api/ws/memory';
+    const socket = new WebSocket(wsUrl);
+    socket.onmessage = (event) => onMemoryUpdate(JSON.parse(event.data));
+    return socket;
+  } catch (e) {
+    console.warn('WebSocket stream fallback to polling');
+    return null;
+  }
+}
+
 export async function searchMemory(query: string, source?: string): Promise<{ results: SearchResult[]; latencyMs: number }> {
   try {
     const url = new URL(`${BACKEND_URL}/api/search`);
