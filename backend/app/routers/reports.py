@@ -10,6 +10,6 @@ def download_pdf_report(audit_id: str):
         content=pdf_bytes,
         media_type="application/pdf",
         headers={
-            "Content-Disposition": f"attachment; filename=GrowthPilot_Audit_{audit_id}.pdf"
+            "Content-Disposition": f"attachment; filename=Troopod_Audit_{audit_id}.pdf"
         }
     )

@@ -22,7 +22,7 @@ export const SettingsView: React.FC = () => {
           <Settings className="w-4 h-4 text-blue-500" /> Agency Settings & API Configuration
         </h2>
         <p className="text-xs text-slate-400 mt-0.5">
-          Manage live API keys, Supabase database settings, and GrowthPilot agency integration credentials.
+          Manage live API keys, Supabase database settings, and Troopod agency integration credentials.
         </p>
       </div>
 

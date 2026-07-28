@@ -102,7 +102,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, activeTabTitle }) 
           </div>
           <div className="hidden md:block text-left text-xs">
             <div className="font-semibold text-slate-200 leading-none">Senior Growth Lead</div>
-            <div className="text-[10px] text-slate-400 mt-0.5">agency@growthpilot.ai</div>
+            <div className="text-[10px] text-slate-400 mt-0.5">agency@troopod.ai</div>
           </div>
         </div>
       </div>

@@ -37,6 +37,6 @@ def export_audits_csv():
         content=output.getvalue(),
         media_type="text/csv",
         headers={
-            "Content-Disposition": "attachment; filename=GrowthPilot_Audits_Export.csv"
+            "Content-Disposition": "attachment; filename=Troopod_Audits_Export.csv"
         }
     )

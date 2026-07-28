@@ -56,7 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <div>
               <div className="flex items-center space-x-1.5">
-                <span className="font-bold text-sm text-slate-100 tracking-tight">GrowthPilot</span>
+                <span className="font-bold text-sm text-slate-100 tracking-tight">Troopod</span>
                 <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">AI</span>
               </div>
               <span className="text-[11px] text-slate-400 font-medium block">Agency Engine v1.0</span>

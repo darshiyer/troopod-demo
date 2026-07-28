@@ -29,7 +29,7 @@ Specifically:
 1. Your primary CTA button drops below the fold on mobile viewports (<390px).
 2. Your 5-star review social proof is separated from your order button by 2 full page scrolls.
 
-We ran a quick Growth Audit on {domain} using GrowthPilot AI and calculated an estimated +{annual_lift}/year in incremental revenue lift by implementing 4 high-impact fixes.
+We ran a quick Growth Audit on {domain} using Troopod Agency Engine and calculated an estimated +{annual_lift}/year in incremental revenue lift by implementing 4 high-impact fixes.
 
 Would you be open to seeing the 2-minute video teardown and PDF report? No pitch — just actionable takeaways.
 
@@ -105,7 +105,7 @@ Cheers,""",
             id="asset-proposal-1",
             channel="sales_proposal",
             title="Executive Growth Sprint Proposal Brief",
-            subject_line=f"GrowthPilot Agency Sprint Proposal — {company_name}",
+            subject_line=f"Troopod Agency Sprint Proposal — {company_name}",
             body_content=f"""EXECUTIVE SUMMARY & PROPOSAL BRIEF
 
 Target Account: {company_name} ({domain})

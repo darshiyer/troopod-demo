@@ -2,7 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'GrowthPilot AI — Enterprise E-Commerce CRO & Sales Engine',
+  title: 'Troopod Agency Engine — Enterprise E-Commerce CRO & Sales Engine',
   description: 'AI Growth Audit & Sales Automation Platform for fast-moving e-commerce agencies.',
 };
 
