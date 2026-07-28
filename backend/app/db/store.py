@@ -41,7 +41,7 @@ class DataStore:
     def get_audit(self, audit_id: str) -> Optional[dict]:
         return self.audits.get(audit_id)
 
-    def list_audits((self)) -> List[dict]:
+    def list_audits(self) -> List[dict]:
         return sorted(list(self.audits.values()), key=lambda x: x.get("created_at", ""), reverse=True)
 
     def delete_audit(self, audit_id: str) -> bool:

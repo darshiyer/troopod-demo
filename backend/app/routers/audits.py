@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, BackgroundTask
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from typing import List
 
 from app.schemas.audit import AuditRequest, AuditResult, AuditSummaryItem
