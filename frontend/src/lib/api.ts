@@ -1,144 +1,260 @@
-export interface SearchResult {
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+
+export interface PageSpeedMetric {
+  performance_score: number;
+  accessibility_score: number;
+  best_practices_score: number;
+  seo_score: number;
+  lcp_seconds: number;
+  inp_ms: number;
+  cls_score: number;
+}
+
+export interface VisionAnalysis {
+  visual_hierarchy_score: number;
+  cta_placement_score: number;
+  whitespace_score: number;
+  contrast_score: number;
+  button_visibility_score: number;
+  readability_score: number;
+  accessibility_score: number;
+  trust_indicator_score: number;
+  design_quality_rating: string;
+  observations: string[];
+}
+
+export interface FrictionPoint {
   id: string;
+  category: string;
+  severity: "high" | "medium" | "low";
   title: string;
-  source: 'chrome' | 'safari' | 'arc' | 'notes' | 'terminal' | 'code' | 'pdf';
-  url?: string;
-  path?: string;
-  snippet: string;
-  score: number;
-  timestamp: string;
-  metadata?: Record<string, any>;
+  description: string;
+  location: string;
+  impact: string;
+  recommended_fix: string;
 }
 
-export interface TimelineItem {
+export interface CompetitorBenchmark {
+  name: string;
+  url: string;
+  ux_score: number;
+  load_speed_seconds: number;
+  pricing_model: string;
+  strengths: string[];
+  weaknesses: string[];
+}
+
+export interface RevenueOpportunity {
+  current_conversion_rate: number;
+  estimated_monthly_traffic: number;
+  average_order_value: number;
+  target_conversion_rate: number;
+  monthly_revenue_lift: number;
+  annual_revenue_lift: number;
+}
+
+export interface AuditResult {
   id: string;
-  hour: string;
+  url: string;
+  company_name: string;
+  domain: string;
+  created_at: string;
+  status: string;
+  progress_step: string;
+  progress_percent: number;
+  metadata: {
+    title: string;
+    description: string;
+    og_title?: string;
+    og_description?: string;
+    og_image?: string;
+    canonical_url?: string;
+    robots?: string;
+    has_sitemap: boolean;
+    has_schema_markup: boolean;
+  };
+  extracted_elements: {
+    headlines: string[];
+    ctas: string[];
+    testimonials: string[];
+    products: string[];
+    navigation_links: string[];
+    pricing_mentions: string[];
+    trust_badges: string[];
+    has_live_chat: boolean;
+    has_popups: boolean;
+    form_count: number;
+  };
+  pagespeed: PageSpeedMetric;
+  vision: VisionAnalysis;
+  analysis: {
+    business_summary: string;
+    target_audience: string;
+    business_model: string;
+    value_proposition: string;
+    brand_voice: string;
+    weak_messaging: string[];
+    trust_issues: string[];
+    missing_ctas: string[];
+    seo_observations: string[];
+  };
+  conversion_score: number;
+  trust_score: number;
+  ux_score: number;
+  readability_score: number;
+  copy_score: number;
+  overall_growth_score: number;
+  friction_points: FrictionPoint[];
+  recommendations: string[];
+  revenue_opportunity: RevenueOpportunity;
+  competitors: CompetitorBenchmark[];
+}
+
+export interface CRMLead {
+  id: string;
+  company_name: string;
+  domain: string;
+  url: string;
+  audit_id?: string;
+  contact_name?: string;
+  contact_email?: string;
+  status: "New" | "Contacted" | "Demo Scheduled" | "Proposal Sent" | "Closed Won" | "Closed Lost";
+  owner: string;
+  estimated_arr_lift: number;
+  notes?: string;
+  tags: string[];
+  follow_up_date?: string;
+  last_contacted?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OutreachAsset {
+  id: string;
+  channel: string;
   title: string;
-  source: 'chrome' | 'notes' | 'terminal' | 'code';
-  detail: string;
-  timestamp: string;
+  subject_line?: string;
+  body_content: string;
+  target_role: string;
+  tone: string;
 }
 
-export interface GraphData {
-  nodes: { id: string; label: string; group: string; val: number }[];
-  edges: { source: string; target: string; relationship: string; weight: number }[];
+export interface OutreachCampaign {
+  audit_id: string;
+  company_name: string;
+  domain: string;
+  cold_email: OutreachAsset;
+  linkedin_message: OutreachAsset;
+  twitter_dm: OutreachAsset;
+  follow_up_email: OutreachAsset;
+  founder_intro: OutreachAsset;
+  sales_proposal: OutreachAsset;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+export interface LandingPageRewrite {
+  audit_id: string;
+  company_name: string;
+  headlines: Array<{
+    original: string;
+    variation_1: string;
+    variation_2: string;
+    variation_3: string;
+    rationale: string;
+    predicted_conversion_lift: string;
+  }>;
+  ctas: Array<{
+    original: string;
+    improved_cta: string;
+    subtext_friction_reducer: string;
+    placement_recommendation: string;
+  }>;
+  pricing_suggestions: Array<{
+    tier_name: string;
+    suggested_structure: string;
+    value_anchoring_tip: string;
+    trust_element: string;
+  }>;
+  hero_redesign: {
+    headline: string;
+    subheadline: string;
+    primary_cta: string;
+    secondary_cta: string;
+    social_proof_bar: string;
+  };
+  faq_section: Array<{ question: string; answer: string }>;
+  testimonials: Array<{ quote: string; customer_profile: string; result_highlight: string }>;
+  seo_improvements: {
+    meta_title: string;
+    meta_description: string;
+    target_keywords: string[];
+    schema_type: string;
+  };
+}
 
-// Real-time WebSocket connection helper for memory indexing events
-export function connectMemoryStream(onMemoryUpdate: (event: any) => void) {
-  try {
-    const wsUrl = BACKEND_URL.replace('http', 'ws') + '/api/ws/memory';
-    const socket = new WebSocket(wsUrl);
-    socket.onmessage = (event) => onMemoryUpdate(JSON.parse(event.data));
-    return socket;
-  } catch (e) {
-    console.warn('WebSocket stream fallback to polling');
-    return null;
+// API Functions
+export async function startAuditScan(url: string): Promise<AuditResult> {
+  const res = await fetch(`${API_BASE_URL}/audits/scan`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || "Failed to launch website audit.");
   }
+  return res.json();
 }
 
-export async function searchMemory(query: string, source?: string): Promise<{ results: SearchResult[]; latencyMs: number }> {
-  try {
-    const url = new URL(`${BACKEND_URL}/api/search`);
-    url.searchParams.append('query', query);
-    if (source && source !== 'all') url.searchParams.append('source', source);
-
-    const res = await fetch(url.toString(), { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      return { results: data.results, latencyMs: data.latency_ms };
-    }
-  } catch (err) {
-    console.warn('Backend unavailable, using simulated local Mac memory:', err);
-  }
-
-  // High-fidelity Mock Fallback for Live Vercel Demo
-  const mockResults: SearchResult[] = [
-    {
-      id: '1',
-      title: 'mBART-50 Legal Translation Architecture',
-      source: 'code',
-      url: 'https://github.com/darshiyer/OmniBrain',
-      path: 'backend/app/indexer/hybrid_search.py',
-      snippet: 'Engineered Marathi-Kannada legal translation pipeline using mBART-50 and IndicTrans2 transformers (+25% BLEU improvement).',
-      score: 0.96,
-      timestamp: '2026-07-22T14:00:00Z',
-      metadata: { repo: 'darshiyer/OmniBrain', framework: 'PyTorch' }
-    },
-    {
-      id: '2',
-      title: 'Model Context Protocol (MCP) Tool Integration',
-      source: 'code',
-      path: 'backend/app/mcp_server.py',
-      snippet: 'Exposing 7 native MacBook memory tools directly into Cursor, Claude Desktop, and VS Code via Model Context Protocol (MCP).',
-      score: 0.91,
-      timestamp: '2026-07-23T10:15:00Z',
-      metadata: { standard: 'MCP', provider: 'Anthropic' }
-    },
-    {
-      id: '3',
-      title: 'LanceDB Memory-Mapped Vector Latency Notes',
-      source: 'notes',
-      path: '~/Documents/Obsidian/Vector_Storage.md',
-      snippet: 'Sub-50ms hybrid search using LanceDB memory-mapped vector tables with nomic-embed-text ONNX model under 100MB RAM.',
-      score: 0.88,
-      timestamp: '2026-07-21T18:30:00Z',
-      metadata: { vault: 'Research', format: 'markdown' }
-    },
-    {
-      id: '4',
-      title: 'PyTorch Transformer Quantization & CUDA Graphs',
-      source: 'chrome',
-      url: 'https://pytorch.org/docs/stable/nn.html',
-      snippet: 'Researched low-bit integer quantization (INT8/INT4) for low-resource Indian language translation backbones.',
-      score: 0.84,
-      timestamp: '2026-07-20T11:45:00Z',
-      metadata: { browser: 'Chrome', visits: 14 }
-    }
-  ];
-
-  const filtered = source && source !== 'all' 
-    ? mockResults.filter(r => r.source === source) 
-    : mockResults;
-
-  return { results: filtered, latencyMs: 24.5 };
+export async function fetchAuditsList(): Promise<AuditResult[]> {
+  const res = await fetch(`${API_BASE_URL}/audits`);
+  if (!res.ok) throw new Error("Failed to fetch audits");
+  return res.json();
 }
 
-export async function fetchDailyTimeline(): Promise<TimelineItem[]> {
-  return [
-    {
-      id: 't1',
-      hour: '09:30 AM',
-      title: 'Researched Model Context Protocol (MCP) Standards',
-      source: 'chrome',
-      detail: 'Visited modelcontextprotocol.io specification & Anthropic docs',
-      timestamp: '2026-07-23T04:00:00Z'
-    },
-    {
-      id: 't2',
-      hour: '11:15 AM',
-      title: 'Implemented Reciprocal Rank Fusion (RRF) Reranker',
-      source: 'code',
-      detail: 'Added exponential temporal decay scoring in hybrid_search.py',
-      timestamp: '2026-07-23T05:45:00Z'
-    },
-    {
-      id: 't3',
-      hour: '02:45 PM',
-      title: 'Saved Notes on Memory-Mapped Vector Retrieval',
-      source: 'notes',
-      detail: 'Documented zero-overhead ONNX embeddings in Obsidian vault',
-      timestamp: '2026-07-23T09:15:00Z'
-    },
-    {
-      id: 't4',
-      hour: '05:20 PM',
-      title: 'Ran Local FastAPI Benchmark Tests',
-      source: 'terminal',
-      detail: 'Executed uvicorn app.main:app --port 8000 (24ms p95 latency)',
-      timestamp: '2026-07-23T11:50:00Z'
-    }
-  ];
+export async function fetchAuditById(id: string): Promise<AuditResult> {
+  const res = await fetch(`${API_BASE_URL}/audits/${id}`);
+  if (!res.ok) throw new Error("Audit not found");
+  return res.json();
+}
+
+export async function fetchCRMLeads(): Promise<CRMLead[]> {
+  const res = await fetch(`${API_BASE_URL}/crm`);
+  if (!res.ok) throw new Error("Failed to fetch CRM leads");
+  return res.json();
+}
+
+export async function updateCRMLead(id: string, updates: Partial<CRMLead>): Promise<CRMLead> {
+  const res = await fetch(`${API_BASE_URL}/crm/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  });
+  if (!res.ok) throw new Error("Failed to update lead");
+  return res.json();
+}
+
+export async function generateOutreachCampaign(auditId: string): Promise<OutreachCampaign> {
+  const res = await fetch(`${API_BASE_URL}/outreach/generate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ audit_id: auditId }),
+  });
+  if (!res.ok) throw new Error("Failed to generate outreach campaign");
+  return res.json();
+}
+
+export async function generateLandingPageRewrite(auditId: string): Promise<LandingPageRewrite> {
+  const res = await fetch(`${API_BASE_URL}/rewrites/landing-page?audit_id=${auditId}`, {
+    method: "POST",
+  });
+  if (!res.ok) throw new Error("Failed to generate rewrite");
+  return res.json();
+}
+
+export function getPDFReportUrl(auditId: string): string {
+  return `${API_BASE_URL}/reports/pdf/${auditId}`;
+}
+
+export function getCSVExportUrl(): string {
+  return `${API_BASE_URL}/export/csv`;
 }

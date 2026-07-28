@@ -1,0 +1,8 @@
+node_modules/
+.next/
+vector-indexer/
+backend/venv/
+backend/__pycache__/
+*.pyc
+storage_dump.json
+.DS_Store

@@ -1,151 +1,280 @@
 "use client";
-import React, { useState } from 'react';
-import { OmniSearch } from '../components/OmniSearch';
-import { TimelineView } from '../components/TimelineView';
-import { KnowledgeGraphView } from '../components/KnowledgeGraphView';
-import { Sparkles, Shield, Cpu, Zap, Search, Clock, Network, Terminal, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sidebar, NavigationTab } from '../components/layout/Sidebar';
+import { Navbar } from '../components/layout/Navbar';
+import { GlobalSearchModal } from '../components/common/GlobalSearchModal';
+import { QuickScannerWidget } from '../components/dashboard/QuickScannerWidget';
+import { MetricsOverview } from '../components/dashboard/MetricsOverview';
+import { AuditDetailView } from '../components/audit/AuditDetailView';
+import { CRMPipelineView } from '../components/crm/CRMPipelineView';
+import { OutreachHubView } from '../components/outreach/OutreachHubView';
+import { LandingPageRewriteLab } from '../components/rewrites/LandingPageRewriteLab';
+import { SettingsView } from '../components/settings/SettingsView';
+import { fetchAuditsList, fetchCRMLeads, AuditResult, CRMLead, getPDFReportUrl } from '../lib/api';
+import { Search, ExternalLink, ArrowRight, Download, Globe, FileText, Send, Sparkles } from 'lucide-react';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<'search' | 'timeline' | 'graph' | 'mcp'>('search');
+  const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const [audits, setAudits] = useState<AuditResult[]>([]);
+  const [crmLeads, setCrmLeads] = useState<CRMLead[]>([]);
+  const [selectedAudit, setSelectedAudit] = useState<AuditResult | null>(null);
+
+  // Load initial audits and CRM leads
+  const loadData = async () => {
+    try {
+      const [auditData, leadData] = await Promise.all([fetchAuditsList(), fetchCRMLeads()]);
+      setAudits(auditData);
+      setCrmLeads(leadData);
+    } catch (e) {
+      console.error("Error fetching data:", e);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleAuditComplete = (newAudit: AuditResult) => {
+    setAudits((prev) => [newAudit, ...prev]);
+    setSelectedAudit(newAudit);
+    setActiveTab('audits');
+    loadData();
+  };
+
+  const handleSelectAuditById = (id: string) => {
+    const found = audits.find((a) => a.id === id);
+    if (found) {
+      setSelectedAudit(found);
+      setActiveTab('audits');
+    }
+  };
+
+  const tabTitles: Record<NavigationTab, string> = {
+    dashboard: 'Agency Growth Dashboard',
+    audits: selectedAudit ? `Audit: ${selectedAudit.company_name}` : 'E-Commerce Growth Audits',
+    crm: 'CRM Pipeline & Lead Tracker',
+    outreach: 'Multi-Channel Sales Outreach Hub',
+    proposals: 'Proposals & PDF Reports',
+    rewrites: 'AI Landing Page Rewrite Lab',
+    settings: 'Agency Settings & API Keys'
+  };
 
   return (
-    <main className="flex flex-col items-center justify-start min-h-screen px-4 py-12 max-w-6xl mx-auto space-y-8">
-      {/* Header Banner */}
-      <div className="text-center max-w-3xl space-y-4">
-        <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>100% Privacy-First • macOS Second Brain Engine</span>
-        </div>
-        
-        <h1 className="text-4xl sm:text-6xl font-black tracking-tight bg-gradient-to-r from-slate-100 via-cyan-200 to-cyan-500 bg-clip-text text-transparent">
-          OmniBrain AI
-        </h1>
-        
-        <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
-          Sub-50ms hybrid vector retrieval across Chrome visits, Obsidian notes, terminal history, and code repositories—exposing native Model Context Protocol (MCP) tools for Cursor & Claude Desktop.
-        </p>
-      </div>
+    <div className="flex min-h-screen bg-[#090D16] text-slate-100 font-sans antialiased">
+      {/* Sidebar */}
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={(tab) => {
+          if (tab === 'audits' && !selectedAudit && audits.length > 0) {
+            setSelectedAudit(audits[0]);
+          }
+          setActiveTab(tab);
+        }}
+        auditCount={audits.length}
+        crmCount={crmLeads.length}
+      />
 
-      {/* Real-time System Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-4xl">
-        <div className="p-3.5 bg-slate-900/60 border border-slate-800 rounded-2xl backdrop-blur-xl flex items-center space-x-3">
-          <Zap className="w-5 h-5 text-amber-400" />
-          <div>
-            <div className="text-xs text-slate-400 font-medium">Latency (p95)</div>
-            <div className="text-sm font-bold text-slate-100">24.5 ms</div>
-          </div>
-        </div>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Navbar */}
+        <Navbar
+          onOpenSearch={() => setIsSearchOpen(true)}
+          activeTabTitle={tabTitles[activeTab]}
+        />
 
-        <div className="p-3.5 bg-slate-900/60 border border-slate-800 rounded-2xl backdrop-blur-xl flex items-center space-x-3">
-          <Cpu className="w-5 h-5 text-cyan-400" />
-          <div>
-            <div className="text-xs text-slate-400 font-medium">Active Memory</div>
-            <div className="text-sm font-bold text-slate-100">&lt; 95 MB RAM</div>
-          </div>
-        </div>
+        {/* Global Search Modal (Cmd + K) */}
+        <GlobalSearchModal
+          isOpen={isSearchOpen}
+          onClose={() => setIsSearchOpen(false)}
+          audits={audits}
+          crmLeads={crmLeads}
+          onSelectAudit={handleSelectAuditById}
+          onSelectLead={(id) => setActiveTab('crm')}
+        />
 
-        <div className="p-3.5 bg-slate-900/60 border border-slate-800 rounded-2xl backdrop-blur-xl flex items-center space-x-3">
-          <Shield className="w-5 h-5 text-emerald-400" />
-          <div>
-            <div className="text-xs text-slate-400 font-medium">Privacy Status</div>
-            <div className="text-sm font-bold text-slate-100">100% On-Device</div>
-          </div>
-        </div>
+        {/* Page Body */}
+        <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6 overflow-y-auto">
+          {/* DASHBOARD TAB */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-6">
+              {/* Quick Scanner Widget */}
+              <QuickScannerWidget onScanComplete={handleAuditComplete} />
 
-        <div className="p-3.5 bg-slate-900/60 border border-slate-800 rounded-2xl backdrop-blur-xl flex items-center space-x-3">
-          <Sparkles className="w-5 h-5 text-purple-400" />
-          <div>
-            <div className="text-xs text-slate-400 font-medium">MCP Protocol</div>
-            <div className="text-sm font-bold text-slate-100">7 Registered</div>
-          </div>
-        </div>
-      </div>
+              {/* Metrics Overview Cards */}
+              <MetricsOverview audits={audits} crmLeads={crmLeads} />
 
-      {/* Navigation Tabs */}
-      <div className="flex items-center space-x-1.5 p-1.5 bg-slate-900/80 border border-slate-800 rounded-2xl backdrop-blur-xl">
-        <button
-          onClick={() => setActiveTab('search')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-            activeTab === 'search'
-              ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Search className="w-3.5 h-3.5" />
-          <span>OmniSearch</span>
-        </button>
+              {/* Recent Audits Table & Quick Launch */}
+              <div className="bg-[#111827] border border-[#1F2937] rounded-[10px] p-5 space-y-4 shadow-card">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                    <Search className="w-4 h-4 text-blue-500" /> Recent E-Commerce Audits
+                  </h3>
+                  <button
+                    onClick={() => setActiveTab('audits')}
+                    className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                  >
+                    View All Audits <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
 
-        <button
-          onClick={() => setActiveTab('timeline')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-            activeTab === 'timeline'
-              ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Clock className="w-3.5 h-3.5" />
-          <span>Timeline Story</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('graph')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-            activeTab === 'graph'
-              ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Network className="w-3.5 h-3.5" />
-          <span>Knowledge Graph</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('mcp')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-            activeTab === 'mcp'
-              ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Terminal className="w-3.5 h-3.5" />
-          <span>MCP Server</span>
-        </button>
-      </div>
-
-      {/* Main Tab Content */}
-      <div className="w-full">
-        {activeTab === 'search' && <OmniSearch />}
-        {activeTab === 'timeline' && <TimelineView />}
-        {activeTab === 'graph' && <KnowledgeGraphView />}
-        {activeTab === 'mcp' && (
-          <div className="w-full max-w-3xl mx-auto p-6 bg-slate-900/60 border border-slate-800 rounded-2xl backdrop-blur-xl space-y-4 text-left">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-purple-400" />
-                Registered Model Context Protocol (MCP) Tools
-              </h3>
-              <span className="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> Ready
-              </span>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs text-slate-300">
+                    <thead className="bg-[#0B0F17] text-slate-400 uppercase text-[10px] font-semibold border-b border-[#1F2937]">
+                      <tr>
+                        <th className="p-3">Store</th>
+                        <th className="p-3">Growth Score</th>
+                        <th className="p-3">Est. ARR Opportunity</th>
+                        <th className="p-3">Date Scanned</th>
+                        <th className="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#1F2937]">
+                      {audits.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="p-6 text-center text-slate-500 italic">
+                            No audits performed yet. Paste a website URL above to start!
+                          </td>
+                        </tr>
+                      ) : (
+                        audits.slice(0, 5).map((audit) => (
+                          <tr key={audit.id} className="hover:bg-[#0B0F17]/50 transition-colors">
+                            <td className="p-3">
+                              <div className="font-bold text-slate-100">{audit.company_name}</div>
+                              <div className="text-[10px] text-slate-400 font-mono">{audit.domain}</div>
+                            </td>
+                            <td className="p-3 font-mono font-bold text-blue-400">
+                              {audit.overall_growth_score}/100
+                            </td>
+                            <td className="p-3 font-mono font-bold text-emerald-400">
+                              +${((audit.revenue_opportunity?.annual_revenue_lift || 0) / 1000).toFixed(0)}k/yr
+                            </td>
+                            <td className="p-3 font-mono text-slate-400">
+                              {new Date(audit.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="p-3 text-right">
+                              <button
+                                onClick={() => {
+                                  setSelectedAudit(audit);
+                                  setActiveTab('audits');
+                                }}
+                                className="px-3 py-1 bg-[#0B0F17] hover:bg-[#1F2937] text-xs font-semibold text-blue-400 rounded-[6px] border border-[#1F2937]"
+                              >
+                                Open Teardown
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
-            
-            <p className="text-xs text-slate-400 leading-relaxed">
-              OmniBrain exposes native JSON-RPC Model Context Protocol tools. You can add this server endpoint to your Cursor Settings (`~/.cursor/mcp.json`) or Claude Desktop config.
-            </p>
+          )}
 
-            <div className="p-4 bg-slate-950 rounded-xl font-mono text-xs text-cyan-300 overflow-x-auto border border-slate-800">
-              <pre>{`{
-  "mcpServers": {
-    "omnibrain": {
-      "command": "uvicorn",
-      "args": ["backend.app.main:app", "--port", "8000"]
-    }
-  }
-}`}</pre>
+          {/* AUDITS TAB */}
+          {activeTab === 'audits' && (
+            selectedAudit ? (
+              <AuditDetailView
+                audit={selectedAudit}
+                onBack={() => setSelectedAudit(null)}
+                onOpenOutreach={(auditId) => setActiveTab('outreach')}
+              />
+            ) : (
+              <div className="space-y-4">
+                <QuickScannerWidget onScanComplete={handleAuditComplete} />
+                <div className="bg-[#111827] border border-[#1F2937] rounded-[10px] p-5 space-y-3">
+                  <h3 className="text-sm font-bold text-slate-100">All Completed Audits</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {audits.map((a) => (
+                      <div
+                        key={a.id}
+                        onClick={() => setSelectedAudit(a)}
+                        className="p-4 bg-[#0B0F17] border border-[#1F2937] rounded-[10px] hover:border-blue-500/50 transition-all cursor-pointer space-y-3 group"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="font-bold text-slate-100 group-hover:text-blue-400 transition-colors">
+                            {a.company_name}
+                          </div>
+                          <span className="text-xs font-mono font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                            {a.overall_growth_score}/100
+                          </span>
+                        </div>
+                        <div className="text-xs text-slate-400 font-mono">{a.domain}</div>
+                        <div className="flex justify-between items-baseline pt-2 border-t border-[#1F2937] text-xs">
+                          <span className="text-slate-400">Est ARR Lift:</span>
+                          <span className="font-mono font-bold text-emerald-400">
+                            +${((a.revenue_opportunity?.annual_revenue_lift || 0) / 1000).toFixed(0)}k/yr
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )
+          )}
+
+          {/* CRM TAB */}
+          {activeTab === 'crm' && (
+            <CRMPipelineView
+              leads={crmLeads}
+              onRefreshLeads={loadData}
+              onSelectAudit={handleSelectAuditById}
+            />
+          )}
+
+          {/* OUTREACH TAB */}
+          {activeTab === 'outreach' && (
+            <OutreachHubView
+              audits={audits}
+              selectedAuditId={selectedAudit?.id}
+            />
+          )}
+
+          {/* PROPOSALS TAB */}
+          {activeTab === 'proposals' && (
+            <div className="bg-[#111827] border border-[#1F2937] rounded-[10px] p-6 space-y-4">
+              <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-blue-500" /> Executive Proposals & PDF Hub
+              </h2>
+              <p className="text-xs text-slate-400">
+                Download beautifully formatted multi-page PDF audit reports with executive summaries, metrics, and friction teardowns.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+                {audits.map((a) => (
+                  <div key={a.id} className="p-4 bg-[#0B0F17] border border-[#1F2937] rounded-[10px] space-y-3">
+                    <div className="font-bold text-slate-100">{a.company_name}</div>
+                    <div className="text-xs text-slate-400 font-mono">{a.domain}</div>
+                    <a
+                      href={getPDFReportUrl(a.id)}
+                      download={`GrowthPilot_${a.domain}_Report.pdf`}
+                      className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-[8px] flex items-center justify-center space-x-1.5 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Download PDF Brief</span>
+                    </a>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* REWRITES TAB */}
+          {activeTab === 'rewrites' && (
+            <LandingPageRewriteLab
+              audits={audits}
+              selectedAuditId={selectedAudit?.id}
+            />
+          )}
+
+          {/* SETTINGS TAB */}
+          {activeTab === 'settings' && <SettingsView />}
+        </main>
       </div>
-    </main>
+    </div>
   );
 }
