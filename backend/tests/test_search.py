@@ -2,8 +2,10 @@ import pytest
 from app.indexer.hybrid_search import reciprocal_rank_fusion, calculate_temporal_decay
 
 def test_temporal_decay_recent():
-    now_iso = "2026-07-25T01:00:00Z"
-    decay = calculate_temporal_decay(now_iso)
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+    recent = (now - timedelta(minutes=5)).isoformat()
+    decay = calculate_temporal_decay(recent)
     assert decay > 0.95
 
 def test_rrf_fusion_sorting():

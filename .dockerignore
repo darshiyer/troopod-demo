@@ -1,0 +1,19 @@
+# Backend image builds with context: . (repo root), so ignore rules live here
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/**/storage_dump.json
+backend/.pytest_cache/
+backend/.DS_Store
+backend/.env
+
+# Shared / other
+*.pyc
+__pycache__/
+.DS_Store
+.env
+node_modules/
+.next/
+*.tsbuildinfo
+.git/

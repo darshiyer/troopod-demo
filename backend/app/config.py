@@ -18,4 +18,10 @@ class Settings(BaseModel):
     # Environment
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
 
+    # Local data-source paths (used by extractors / indexer)
+    FTS_DB_PATH: str = os.getenv("FTS_DB_PATH", "storage/fts.db")
+    CHROME_HISTORY_PATH: str = os.getenv("CHROME_HISTORY_PATH", "")
+    SAFARI_HISTORY_PATH: str = os.getenv("SAFARI_HISTORY_PATH", "")
+    ARC_HISTORY_PATH: str = os.getenv("ARC_HISTORY_PATH", "")
+
 settings = Settings()
